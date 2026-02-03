@@ -1,10 +1,7 @@
-# Terraform / Terragrunt
-.terraform/
-.terragrunt-cache/
-*.tfstate
-*.tfstate.backup
-*.hcl.json
-
+.web
+*.db
+assets/external/
+.states
 # Python
 __pycache__/
 *.py[cod]
@@ -13,12 +10,20 @@ __pycache__/
 venv/
 ENV/
 .env
+*.egg-info/
+build/
+static/dist/
 
 # Secrets & Credentials
-*.json
 auth.json
 keyfile.json
 .gcp_credentials
 
 # OS
 .DS_Store
+
+# node
+node_modules/
+
+db.sqlite3
+.coverage
