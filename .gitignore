@@ -1,0 +1,15 @@
+.web
+*.db
+assets/external/
+.states
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.env
+*.egg-info/
+build/
+static/dist/
+.DS_Store

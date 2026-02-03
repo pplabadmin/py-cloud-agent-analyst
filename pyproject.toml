@@ -1,0 +1,48 @@
+[project]
+name = "querymind-mibici-gdl"
+version = "1.0.0"
+description = "Headless Observability Engine for MiBici GDL"
+readme = "README.md"
+requires-python = "==3.14.3"
+license = "MIT"
+authors = [{ name = "Jose Munoz" }]
+
+dependencies = [
+    "python-dotenv==1.2.2",
+    "pydantic-settings==2.13.1",
+    "langchain-core==1.2.28",
+    "rich==15.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["ruff==0.15.10"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "S", "UP", "PL", "N", "TRY"]
+ignore = ["E501", "D100"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["core", "engines"]
+section-order = [
+    "future",
+    "standard-library",
+    "google",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+"google" = ["google", "langchain", "langgraph"]
+
+[tool.setuptools]
+# Only including the packages currently in development scope
+packages = ["core", "engines"]
+
+[build-system]
+requires = ["setuptools>=82.0.1"]
+build-backend = "setuptools.build_meta"
