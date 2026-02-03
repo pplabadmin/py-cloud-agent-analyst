@@ -1,0 +1,76 @@
+name: Deploy UI to Artifact Registry
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "apps/frontend/**"
+      - ".github/workflows/deploy-ui.yml"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Google Auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker
+        run: |
+          REGISTRY_HOST="${{ vars.GCP_REGION }}-docker.pkg.dev"
+          gcloud auth configure-docker "$REGISTRY_HOST" --quiet
+
+      - name: Build and Push Image
+        run: |
+          TAG=$(echo $GITHUB_SHA | cut -c1-7)
+          REGISTRY_HOST="${{ vars.GCP_REGION }}-docker.pkg.dev"
+          PROJECT_ID="${{ secrets.GCP_PROJECT_ID }}"
+          REPOSITORY="${{ vars.GCP_REPO_NAME }}"
+          IMAGE_NAME="${{ vars.GCP_IMAGE_NAME }}"
+          IMAGE_URL="$REGISTRY_HOST/$PROJECT_ID/$REPOSITORY/$IMAGE_NAME:$TAG"
+
+          echo "🛠️ Iniciando construcción de imagen..."
+
+          docker build \
+            --build-arg PYTHON_VERSION="${{ vars.PYTHON_VERSION }}" \
+            --build-arg APP_PORT="${{ vars.APP_PORT }}" \
+            --build-arg API_URL="${{ vars.API_URL }}" \
+            --build-arg LOG_LEVEL="${{ vars.LOG_LEVEL }}" \
+            -t "$IMAGE_URL" \
+            -f apps/frontend/Dockerfile .
+
+          echo "📤 Subiendo imagen a Artifact Registry..."
+          docker push "$IMAGE_URL"
+
+      - name: Deploy to Cloud Run
+        run: |
+          TAG=$(echo $GITHUB_SHA | cut -c1-7)
+          IMAGE_URL="${{ vars.GCP_REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/${{ vars.GCP_REPO_NAME }}/${{ vars.GCP_IMAGE_NAME }}:$TAG"
+
+          gcloud run deploy ${{ vars.GCP_IMAGE_NAME }} \
+            --image="$IMAGE_URL" \
+            --region="${{ vars.GCP_REGION }}" \
+            --platform=managed \
+            --ingress=internal-and-cloud-load-balancing \
+            --service-account="${{ secrets.GCP_SERVICE_ACCOUNT }}" \
+            --allow-unauthenticated \
+            --port="${{ vars.APP_PORT }}" \
+            --memory=2Gi \
+            --cpu=1 \
+            --max-instances=1 \
+            --timeout=300 \
+            --quiet

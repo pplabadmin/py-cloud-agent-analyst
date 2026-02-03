@@ -1,0 +1,46 @@
+# Entornos virtuales y Python
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Reflex (Frontend)
+.web/
+.reflex/
+node_modules/
+*.db
+*.db-journal
+
+# Datos y Archivos Pesados (Ignorar CSVs de MiBici)
+trips_data/
+*.csv
+*.xlsx
+*.sql
+backup_*.py
+
+# Secretos y Configuración Local
+.env
+.gcp_credentials/
+auth.json
+*.key
+.secrets/
+
+# IDEs y Herramientas de Sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.git/
+.github/
+.gitignore
+
+# Archivos de Build y Temporales
+build/
+dist/
+*.egg-info/

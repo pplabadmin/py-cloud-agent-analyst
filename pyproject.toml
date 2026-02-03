@@ -1,0 +1,57 @@
+[project]
+name = "querymind"
+version = "1.0.0"
+description = "Observability Dashboard for Autonomous Agents on GCP"
+readme = "README.md"
+requires-python = "==3.14.3"
+license = "MIT"
+authors = [{ name = "Jose Munoz" }]
+
+[project.optional-dependencies]
+dev = ["ruff==0.15.1"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "W",   # Pyflakes & Error checks
+    "I",   # Import sorting
+    "B",   # Bugbear (design flaws)
+    "S",   # Bandit (Security)
+    "UP",  # Pyupgrade
+    "PL",  # Pylint-style rules
+    "N",   # Naming conventions
+    "TRY", # Exception handling best practices
+]
+ignore = [
+    "E501", # Line length handled by formatter
+    "D100", # Missing docstrings
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["core", "engines"]
+section-order = [
+    "future",
+    "standard-library",
+    "google",
+    "third-party",
+    "first-party",
+    "local-folder",
+]
+
+[tool.ruff.lint.isort.sections]
+"google" = ["google", "langchain", "langgraph"]
+
+[tool.setuptools]
+packages = { find = { where = ["apps/backend", "apps/frontend"] } }
+
+[tool.setuptools.package-data]
+"*" = ["*.txt", "*.rst", "*.md"]
+
+[build-system]
+requires = ["setuptools>=82.0.0"]
+build-backend = "setuptools.build_meta"

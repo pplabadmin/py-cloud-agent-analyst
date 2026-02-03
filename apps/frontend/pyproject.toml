@@ -1,0 +1,12 @@
+[project]
+name = "querymind-ui"
+version = "1.0.0"
+
+dependencies = ["reflex==0.8.27", "python-dotenv==1.2.1"]
+
+[tool.setuptools]
+packages = ["querymind"]
+
+[build-system]
+requires = ["setuptools>=82.0.0"]
+build-backend = "setuptools.build_meta"
