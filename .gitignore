@@ -1,0 +1,24 @@
+# Terraform / Terragrunt
+.terraform/
+.terragrunt-cache/
+*.tfstate
+*.tfstate.backup
+*.hcl.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+.env
+
+# Secrets & Credentials
+*.json
+auth.json
+keyfile.json
+.gcp_credentials
+
+# OS
+.DS_Store
