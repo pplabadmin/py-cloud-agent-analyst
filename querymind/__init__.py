@@ -1,0 +1,1 @@
+# querymind module
