@@ -13,3 +13,7 @@ ENV/
 build/
 static/dist/
 .DS_Store
+logs/
+agent_history.db-shm
+agent_history.db-wal
+agent_history.db

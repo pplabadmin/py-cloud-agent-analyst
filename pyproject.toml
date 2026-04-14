@@ -1,32 +1,47 @@
+# ==============================================================================
+# Configuración Central del Proyecto (PEP 621)
+# Define metadatos, gestión de dependencias y configuración de herramientas
+# de análisis estático (Ruff) y empaquetado (Setuptools).
+# ==============================================================================
 [project]
 name = "querymind-mibici-gdl"
 version = "1.0.0"
-description = "Headless Observability Engine for MiBici GDL"
+description = "Headless Observability Engines for MiBici GDL"
 readme = "README.md"
-requires-python = "==3.14.3"
+requires-python = "==3.14.4"
 license = "MIT"
 authors = [{ name = "Jose Munoz" }]
 
 dependencies = [
+    "google-cloud-bigquery==3.41.0",
+    "google-cloud-bigquery-storage==2.37.0",
+    "langchain==1.2.15",
+    "langgraph==1.1.9",
+    "langgraph-checkpoint-sqlite==3.0.3",
+    "langchain-core==1.3.1",
+    "langchain-google-genai==4.2.2",
     "python-dotenv==1.2.2",
-    "pydantic-settings==2.13.1",
-    "langchain-core==1.2.28",
+    "pydantic-settings==2.14.0",
     "rich==15.0.0",
 ]
 
 [project.optional-dependencies]
+# Dependencias exclusivas para el entorno de desarrollo y pipelines CI/CD
 dev = ["ruff==0.15.10"]
 
+# --- Configuración del Linter y Formateador (Ruff) ---
 [tool.ruff]
 line-length = 88
 target-version = "py314"
 
 [tool.ruff.lint]
+# Conjunto de reglas estrictas: Errores (E), Fallos (F), Seguridad (S), Bugbear (B), Isort (I), etc.
 select = ["E", "F", "W", "I", "B", "S", "UP", "PL", "N", "TRY"]
+# E501: Delegado al formateador automático. D100: Relajación de docstrings a nivel de módulo.
 ignore = ["E501", "D100"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["core", "engines"]
+known-first-party = ["core", "engines", "schemas", "tools"]
 section-order = [
     "future",
     "standard-library",
@@ -37,11 +52,13 @@ section-order = [
 ]
 
 [tool.ruff.lint.isort.sections]
+# Agrupación semántica personalizada para dependencias core del ecosistema GCP/AI
 "google" = ["google", "langchain", "langgraph"]
 
+# --- Configuración de Empaquetado ---
 [tool.setuptools]
-# Only including the packages currently in development scope
-packages = ["core", "engines"]
+# Inclusión explícita de módulos internos para asegurar su distribución correcta
+packages = ["core", "engines", "schemas", "tools"]
 
 [build-system]
 requires = ["setuptools>=82.0.1"]

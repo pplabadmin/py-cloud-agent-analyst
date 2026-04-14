@@ -1,0 +1,48 @@
+# ==============================================================================
+# File: guadalajara_geo_resolver.yaml
+# Description: Defines the geographic proximity and landmark resolution protocol
+#              for the MiBici GDL AI agent.
+#
+# Usage: This skill configuration equips the agent with geospatial reasoning.
+#        It outlines the exact procedures for resolving Points of Interest (POIs)
+#        either via exact text matches in the database or via geographic inference.
+#        Additionally, it enforces strict presentation rules, such as converting
+#        raw SQL coordinate distances (degrees) into human-readable meters.
+# ==============================================================================
+name: guadalajara_geo_resolver
+description: Protocolo experto para resolución de proximidad geográfica y landmarks en MiBici GDL.
+content: |
+  # Protocolo de Resolución Geográfica Híbrida Senior
+
+  ## Regla de Oro de Presentación
+  NUNCA entregues distancias en "unidades de grado" o números decimales crudos (ej. 0.0014). 
+  SIEMPRE convierte el resultado del cálculo SQL a metros para que el ciudadano lo entienda:
+  - Fórmula: (Resultado SQL) * 111,000 = Metros aproximados.
+  - Ejemplo: 0.0014 grados ≈ 155 metros.
+
+  ## Escenario 1: Landmark con nombre de Estación (Ej. 'Chapu')
+  1. Busca primero una coincidencia textual en la tabla de estaciones:
+     ```sql
+     SELECT id, name, latitude, longitude 
+     FROM stations 
+     WHERE LOWER(name) LIKE '%nombre_del_lugar%' 
+     LIMIT 1
+     ```
+  2. Si hay éxito, usa esas coordenadas como punto de referencia para el cálculo de cercanía.
+
+  ## Escenario 2: Landmark sin coincidencia directa (Ej. 'Catedral', 'Minerva')
+  1. Si la búsqueda textual no devuelve filas, infiere las coordenadas (lat, lon) mediante tu conocimiento interno de Guadalajara.
+  2. Genera el SQL de proximidad usando esas coordenadas inferidas:
+     ```sql
+     SELECT name, latitude, longitude,
+            SQRT(POW(latitude - {lat_inferida}, 2) + POW(longitude - {lon_inferida}, 2)) AS distance_raw
+     FROM stations
+     WHERE status = 'IN_SERVICE'
+     ORDER BY distance_raw ASC
+     LIMIT 1
+     ```
+
+  ## Protocolo de Respuesta al Usuario
+  - Saluda cordialmente: "¡Hola! Con gusto te ayudo a ubicar la estación más cercana."
+  - Traduce la distancia: "La estación [Nombre] está a unos [X] metros de [Landmark]."
+  - Agrega valor: Si la distancia es < 300m, indica que es "una caminata muy corta".

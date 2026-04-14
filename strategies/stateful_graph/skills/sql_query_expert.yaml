@@ -1,0 +1,52 @@
+# ==============================================================================
+# File: sql_query_expert.yaml
+# Description: Defines the advanced SQL generation skill for the MiBici GDL
+#              AI agent, focusing on BigQuery dialect execution and business logic.
+#
+# Usage: This configuration acts as a targeted knowledge base injected into the
+#        agent's context when SQL operations are needed. It enforces critical
+#        guardrails such as schema constraints, special character escaping
+#        (e.g., backticks for 'Año_de_nacimiento'), alias formatting, and
+#        domain-specific rules (e.g., gender normalization and spatial logic).
+# ==============================================================================
+name: "sql_query_expert"
+description: "Capacidad avanzada para generar y ejecutar SQL en BigQuery sobre MiBici GDL con soporte para caracteres especiales y análisis de negocio."
+content: |
+  ## Detailed Schema Definition
+
+  ### Table `stations`: Comprehensive information about bike stations.
+  - `id`: Unique numerical identifier (PRIMARY KEY).
+  - `name`: Designated name (Use this for 'Chapu', 'Catedral', etc.).
+  - `latitude`: Geographical latitude coordinate.
+  - `longitude`: Geographical longitude coordinate.
+  - `status`: Current operational state (e.g., 'active', 'IN_SERVICE').
+  - **NOTE**: The column 'location' DOES NOT exist. Always use 'name' for text searches.
+
+  ### Table `trips`: Records of individual journeys.
+  - `Viaje_Id`: Unique journey identifier (PRIMARY KEY).
+  - `Usuario_Id`: Unique user identifier.
+  - `Genero`: The gender of the user. Valores reales: 'F' (Mujer), 'M' (Hombre) o NULL.
+  - `Año_de_nacimiento`: User's birth year.
+  - `Inicio_del_viaje`: Timestamp when the journey began.
+  - `Fin_del_viaje`: Timestamp when the journey concluded.
+  - `Origen_Id`: Starting location identifier (Foreign Key to stations.id).
+  - `Destino_Id`: Ending location identifier (Foreign Key to stations.id).
+
+  ## Critical Syntax Rules (Guardrails)
+  1. **SPECIAL CHARACTER ESCAPING**: La columna `Año_de_nacimiento` requiere backticks siempre: `` `Año_de_nacimiento` ``.
+  2. **ASCII ALIASES**: Usa solo caracteres ASCII estándar para alias (ej. 'trip_count', 'senior_trips'). Evita acentos o 'ñ' en los alias de las columnas.
+  3. **GENDER FILTERING**: Solo existen los valores 'F', 'M' y NULL.
+     - Para mujeres, usa: `Genero = 'F'`.
+     - Para hombres, usa: `Genero = 'M'`.
+     - NUNCA uses "Femenino" o "Masculino" en el SQL.
+
+  ## Business Rules & Relationships
+  - **Joins**: Use `trips.Origen_Id = stations.id` for starting stations and `trips.Destino_Id = stations.id` for ending stations.
+  - **Normalization**: For entity search (POI), always use `LOWER(name) LIKE '%term%'`.
+  - **Temporal Logic**: Use `TIMESTAMP_DIFF(Fin_del_viaje, Inicio_del_viaje, MINUTE)` para duraciones.
+  - **Distance**: Use `SQRT(POW(latitude - {lat}, 2) + POW(longitude - ({lon}), 2))`.
+    * NOTA: Siempre envuelve la longitud entre paréntesis `({lon})` para manejar correctamente valores negativos como (-103.34).
+  - **Priorización de Datos**: 
+     - Si el usuario pregunta por volúmenes (cuántos viajes, promedios), el conteo es el dato principal.
+     - Calcula la distancia SOLAMENTE si el usuario pide "cercanía" o "proximidad". No la incluyas por defecto en consultas estadísticas.
+     - Si se piden las "estaciones más cercanas con [filtro]", devuelve tanto el conteo como la distancia para un reporte profesional completo.
